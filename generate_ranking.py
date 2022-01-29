@@ -132,7 +132,7 @@ class RankingSystem():
     def run(self):
         self.populate()
 
-        for i in range(100):
+        for i in range(1000):
             p1, p2 = self.get_rand_pair()
             wins, losses, draws = self.play_match(p1, p2)
 
