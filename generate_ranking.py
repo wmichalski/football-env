@@ -1,6 +1,6 @@
 from game.gymgame_multiplayer import GameEnv
-from elo_module import EloModule
-from model_container import ModelContainer
+from utils.elo_module import EloModule
+from utils.model_container import ModelContainer
 import argparse
 import matplotlib.pyplot as plt
 import random
@@ -26,18 +26,13 @@ class RankingSystem():
         return self.players[id1], self.players[id2]
 
     def populate(self):
-        self.players.append(ModelContainer(
-            "bots/egoistic-simple.zip"))
-        self.players.append(ModelContainer(
-            "bots/egoistic.zip"))
+        # more models can be added
         self.players.append(ModelContainer(
             "bots/sp2-4.zip"))
         self.players.append(ModelContainer(
             "bots/sp2-5.zip"))
         self.players.append(ModelContainer(
             "bots/sp2-6.zip"))
-        self.players.append(ModelContainer(
-            "bots/sp1-final.zip"))
 
     def print_scoreboard(self, winner, loser, diff):
         self.players.sort(key=lambda x: x.elo, reverse=False)

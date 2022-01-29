@@ -1,10 +1,11 @@
 import gym
-from model_container import ModelContainer
+from utils.model_container import ModelContainer
 from game.gymgame_multiplayer import GameEnv
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3 import PPO
 
 enemy_model = ModelContainer("bots/egoistic.zip")
+print(gym.__version__)
 
 # STAGE 1
 env = make_vec_env(GameEnv, n_envs=32, env_kwargs={

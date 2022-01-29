@@ -1,7 +1,7 @@
 import gym
 from game.gymgame_multiplayer import GameEnv
 from stable_baselines3 import PPO
-from model_container import ModelContainer
+from utils.model_container import ModelContainer
 import argparse
 import pygame
 import numpy as np
