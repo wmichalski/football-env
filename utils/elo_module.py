@@ -1,6 +1,5 @@
 import math
 
-
 class EloModule:
     def __init__(self):
         self.k = 20
@@ -30,13 +29,3 @@ class EloModule:
         actual_p1_score = (p1_wins + 0.5 * draws) / (p1_wins + draws + p2_wins)
 
         return self.update_scores(player1.elo, player2.elo, actual_p1_score)
-
-
-if __name__ == "__main__":
-    e1 = 1800
-    e2 = 2300
-
-    mod = EloModule()
-    new1, new2 = mod.update_scores(e1, e2, 0)
-
-    print(new1, new2)

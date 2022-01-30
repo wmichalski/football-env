@@ -1,12 +1,15 @@
+import argparse
+import json
+import os
+import random
+import time
+
+import matplotlib.pyplot as plt
+
 from game.gymgame_multiplayer import GameEnv
 from utils.elo_module import EloModule
 from utils.model_container import ModelContainer
-import argparse
-import matplotlib.pyplot as plt
-import random
-import json
-import os
-import time
+
 
 def most_common(lst):
     return max(set(lst), key=lst.count)

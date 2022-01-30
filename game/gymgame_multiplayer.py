@@ -1,16 +1,16 @@
-import random
-from game.player import Player
-from game.ball import Ball
 import math
-import numpy as np
-import gym
-from gym import spaces
-from stable_baselines3 import PPO
 
-move_matrix = np.array([[0, 0, 0.7, 0.7, 0.7, 0, -0.7, -0.7, -0.7, 0, 0, 0.7, 0.7, 0.7, 0, -0.7, -0.7, -0.7],
-                        [0, 0.7, 0.7, 0, -0.7, -0.7, -0.7, 0, 0.7, 0,
-                            0.7, 0.7, 0, -0.7, -0.7, -0.7, 0, 0.7],
-                        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
+import gym
+import numpy as np
+from gym import spaces
+
+from game.ball import Ball
+from game.player import Player
+
+move_matrix = np.array(
+    [[0, 0, 0.7, 0.7, 0.7, 0, -0.7, -0.7, -0.7, 0, 0, 0.7, 0.7, 0.7, 0, -0.7, -0.7, -0.7],
+     [0, 0.7, 0.7, 0, -0.7, -0.7, -0.7, 0, 0.7, 0, 0.7, 0.7, 0, -0.7, -0.7, -0.7, 0, 0.7],
+     [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1]])
 
 
 def unit_vector(vector):
@@ -34,11 +34,13 @@ def angle_between(v1, v2):
 
 
 class GameEnv(gym.Env):
-    def __init__(self, enemy_model=None, enemy_slow=1, p1_obs_space=None, p2_obs_space=None, map_scale=1, balanced_positioning=False, game_length=600, singleplayer=False):
+    def __init__(self, enemy_model=None, enemy_slow=1, p1_obs_space=None, p2_obs_space=None,
+                 map_scale=1, balanced_positioning=False, game_length=600, singleplayer=False):
         super(GameEnv, self).__init__()
         self.step_size = 5
         self.game_length_cnt = 0
         self.game_length = game_length
+        self.done = False
 
         self.p1_obs_space = p1_obs_space
         self.p2_obs_space = p2_obs_space
@@ -64,11 +66,17 @@ class GameEnv(gym.Env):
         self.action_space = spaces.Discrete(18)
         if p1_obs_space is not None:
             if p1_obs_space == 8:
-                self.observation_space = spaces.Box(low=np.array(
-                    [-1, -1, -2, -2, -1, -1, -2, -2]), high=np.array([1, 1, 2, 2, 1, 1, 2, 2]), shape=(8,), dtype=np.float32)
+                self.observation_space = spaces.Box(
+                    low=np.array([-1, -1, -2, -2, -1, -1, -2, -2]),
+                    high=np.array([1, 1, 2, 2, 1, 1, 2, 2]),
+                    shape=(8,),
+                    dtype=np.float32)
             elif p1_obs_space == 12:
-                self.observation_space = spaces.Box(low=np.array([-1, -1, -2, -2, -1, -1, -2, -2, -1, -1, -2, -2]), high=np.array([
-                                                    1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2]), shape=(12,), dtype=np.float32)
+                self.observation_space = spaces.Box(
+                    low=np.array([-1, -1, -2, -2, -1, -1, -2, -2, -1, -1, -2, -2]),
+                    high=np.array([1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2]),
+                    shape=(12,),
+                    dtype=np.float32)
 
         # ugly temporary hardcode, to be fixed:
         self.player1 = Player(int(self.display_width*0.75),
@@ -233,7 +241,7 @@ class GameEnv(gym.Env):
         return was_outside
 
     def get_enemy_action(self):
-        if self.enemy_model == None:
+        if self.enemy_model is None:
             return [0, 0], 0
         obs = self.get_game_state_p2()
         obs *= -1
@@ -317,22 +325,28 @@ class GameEnv(gym.Env):
     # ugly temporary hardcode, to be fixed:
     def get_game_state_p2(self):
         if self.p2_obs_space == 8:
-            data = np.concatenate(((self.player2.coords-self.normalisation_array)/self.normalisation_array, self.player2.velocity /
-                                  20, (self.ball.coords-self.normalisation_array)/self.normalisation_array, self.ball.velocity/20))
+            data = np.concatenate(
+                ((self.player2.coords - self.normalisation_array) / self.normalisation_array, self.player2.velocity / 20,
+                 (self.ball.coords - self.normalisation_array) / self.normalisation_array, self.ball.velocity / 20))
             data.reshape((1, 8))
         elif self.p2_obs_space == 12:
-            data = np.concatenate(((self.player2.coords-self.normalisation_array)/self.normalisation_array, self.player2.velocity/20, (self.player1.coords-self.normalisation_array) /
-                                  self.normalisation_array, self.player1.velocity/20, (self.ball.coords-self.normalisation_array)/self.normalisation_array, self.ball.velocity/20))
+            data = np.concatenate(
+                ((self.player2.coords - self.normalisation_array) / self.normalisation_array, self.player2.velocity / 20,
+                 (self.player1.coords - self.normalisation_array) / self.normalisation_array, self.player1.velocity / 20,
+                 (self.ball.coords - self.normalisation_array) / self.normalisation_array, self.ball.velocity / 20))
             data.reshape((1, 12))
         return data
 
     def get_game_state_p1(self):
         if self.p1_obs_space == 12:
-            data = np.concatenate(((self.player1.coords-self.normalisation_array)/self.normalisation_array, self.player1.velocity/20, (self.player2.coords-self.normalisation_array) /
-                                  self.normalisation_array, self.player2.velocity/20, (self.ball.coords-self.normalisation_array)/self.normalisation_array, self.ball.velocity/20))
+            data = np.concatenate(
+                ((self.player1.coords - self.normalisation_array) / self.normalisation_array, self.player1.velocity / 20,
+                 (self.player2.coords - self.normalisation_array) / self.normalisation_array, self.player2.velocity / 20,
+                 (self.ball.coords - self.normalisation_array) / self.normalisation_array, self.ball.velocity / 20))
             data.reshape((1, 12))
         elif self.p1_obs_space == 8:
-            data = np.concatenate(((self.player1.coords-self.normalisation_array)/self.normalisation_array, self.player1.velocity /
-                                  20, (self.ball.coords-self.normalisation_array)/self.normalisation_array, self.ball.velocity/20))
+            data = np.concatenate(
+                ((self.player1.coords - self.normalisation_array) / self.normalisation_array, self.player1.velocity / 20,
+                 (self.ball.coords - self.normalisation_array) / self.normalisation_array, self.ball.velocity / 20))
             data.reshape((1, 8))
         return data

@@ -1,8 +1,5 @@
-import gym
 import sys
-import os
-from game.gymgame_multiplayer import GameEnv
-from stable_baselines3.common.env_util import make_vec_env
+
 from stable_baselines3 import PPO
 
 class ModelContainer:

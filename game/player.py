@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Player:
     def __init__(self, x, y, radius):
         self.coords = np.array([x, y])

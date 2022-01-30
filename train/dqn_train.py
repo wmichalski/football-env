@@ -1,25 +1,21 @@
-import tensorflow as tf
-import os
-import numpy as np
 import collections
-import gym
+import os
 from statistics import mean
-from game.gymgame_multiplayer import GameEnv
-import time
 
-from numpy.random import randn, randint
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.models import Sequential
+import numpy as np
+import tensorflow as tf
 from tensorflow.keras.layers import Dense
-from tensorflow.keras import initializers, Input, Model
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.optimizers import Adam
 
+from game.gymgame_multiplayer import GameEnv
 
 class DQNGameRunner:
     def __init__(self, env):
         self.env = env
 
     def run(self, agent, target):
-        obs = env.reset()
+        obs = self.env.reset()
         done = False
         rewards = 0
         step = 0
@@ -30,10 +26,10 @@ class DQNGameRunner:
             agent.add_experience({'state': old_obs, 'action': action,
                                   'reward': reward, 'new_state': obs, 'done': done})
 
-            train_net.train(target)
+            agent.train(target)
             step += 1
             if step % 25 == 0:
-                train_net.copy_weights(target)
+                agent.copy_weights(target)
             rewards += reward
         return rewards
 
@@ -66,8 +62,8 @@ class DQN:
                 np.atleast_2d(state.astype('float32')))
             # print(q_values)
             return np.argmax(q_values)
-        else:
-            return np.random.randint(self.action_space)
+
+        return np.random.randint(self.action_space)
 
     def create_model(self, input_shape, output_shape):
         model = Sequential()
@@ -117,33 +113,38 @@ class DQN:
     def load_model(self, path):
         self.model.load_weights(path)
 
-if __name__ == "__main__":
-    state_space = 8
-    action_space = 18
 
-    env = GameEnv(map_scale=0.4, p1_obs_space=state_space, singleplayer=True)
+class DQNManager():
+    def __init__(self, map_scale=0.4, epochs=1000000):
+        self.state_space = 8
+        self.action_space = 18
+        self.epochs = epochs
+        self.env = GameEnv(map_scale=map_scale,
+                           p1_obs_space=self.state_space, singleplayer=True)
 
-    game_runner = DQNGameRunner(env)
+    def run_training(self):
+        game_runner = DQNGameRunner(self.env)
 
-    train_net = DQN(state_space, action_space)
-    target_net = DQN(state_space, action_space)
+        train_net = DQN(self.state_space, self.action_space)
+        target_net = DQN(self.state_space, self.action_space)
 
-    rewards = collections.deque(maxlen=100)
+        rewards = collections.deque(maxlen=100)
 
-    summary_dir1 = os.path.join("logs", "DQN")
-    summary_writer1 = tf.summary.create_file_writer(summary_dir1)
+        summary_dir1 = os.path.join("logs", "DQN")
+        summary_writer1 = tf.summary.create_file_writer(summary_dir1)
 
-    for i in range(1000000):
-        reward = game_runner.run(train_net, target_net)
-        rewards.append(reward)
-        train_net.explore_chance *= train_net.explore_decay
+        for i in range(self.epochs):
+            reward = game_runner.run(train_net, target_net)
+            rewards.append(reward)
+            train_net.explore_chance *= train_net.explore_decay
 
-        if i % 10 == 0:
-            print(i, mean(rewards))
+            if i % 10 == 0:
+                print(i, mean(rewards))
 
-        with summary_writer1.as_default():
-            tf.summary.scalar(name="rollout/ep_rew_mean", data=mean(rewards), step=i)
-            summary_writer1.flush()
+            with summary_writer1.as_default():
+                tf.summary.scalar(name="rollout/ep_rew_mean",
+                                  data=mean(rewards), step=i)
+                summary_writer1.flush()
 
-        if i % 100 == 0:
-            train_net.save_model(".", i)
+            if i % 100 == 0:
+                train_net.save_model(".", i)
