@@ -104,6 +104,7 @@ class DQN:
             new_current_qvalues[i][actions[i]] = updated_qvalues[i]
 
         loss = self.model.fit(states, new_current_qvalues, verbose=0)
+        return loss
 
 
     def copy_weights(self, target_network):
@@ -129,8 +130,6 @@ if __name__ == "__main__":
 
     train_net = DQN(state_space, action_space)
     target_net = DQN(state_space, action_space)
-
-    target_net.model.summary()
 
     rewards = collections.deque(maxlen=100)
 
