@@ -106,7 +106,6 @@ class DQN:
         loss = self.model.fit(states, new_current_qvalues, verbose=0)
         return loss
 
-
     def copy_weights(self, target_network):
         target_network.model.set_weights(self.model.get_weights())
 
@@ -118,13 +117,11 @@ class DQN:
     def load_model(self, path):
         self.model.load_weights(path)
 
-
 if __name__ == "__main__":
     state_space = 8
     action_space = 18
 
-    env = GameEnv(map_scale=0.4, p1_obs_space=state_space)
-    env.lock_enemy = True
+    env = GameEnv(map_scale=0.4, p1_obs_space=state_space, singleplayer=True)
 
     game_runner = DQNGameRunner(env)
 
