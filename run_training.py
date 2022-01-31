@@ -20,10 +20,7 @@ if __name__ == "__main__":
 
     if args['algorithm'] == "PPO":
         ppo_manager = PPOManager(args['predefined'], args['mapsize'], args['epochs'])
-        if args["predefined"]:
-            ppo_manager.predefined_training()
-        else:
-            ppo_manager.custom_training()
+        ppo_manager.run_training()
     elif args['algorithm'] == "DQN":
         if args["predefined"]:
             print("running DQN algorithm, ignoring PPO predefined flag")

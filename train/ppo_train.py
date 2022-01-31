@@ -15,6 +15,12 @@ class PPOManager():
         if self.predefined:
             print("running predefined multistage variant, overriding user's input")
 
+    def run_training(self):
+        if self.predefined:
+            self.predefined_training()
+        else:
+            self.custom_training()
+
     def custom_training(self):
         env = make_vec_env(GameEnv, n_envs=32, env_kwargs={'p1_obs_space': 8, 'map_scale': self.mapsize, 'singleplayer': True})
         model = PPO("MlpPolicy", env, verbose=1, tensorboard_log='logs/')
