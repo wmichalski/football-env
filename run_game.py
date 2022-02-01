@@ -136,11 +136,7 @@ class GameVisualiser():
         for frame in range(1, 99999):
             self.draw_pygame(frame, reward_sum)
             if not self.human_interaction:
-                actions = []
-                for _ in range(5):
-                    action, _ = self.model.predict(obs)
-                    actions.append(action)
-                action = most_common(actions)
+                action, _ = self.model.predict(obs)
             else:
                 action = self.get_human_input()
 
