@@ -20,6 +20,8 @@ The game can be played either in interactive mode (human vs bot) or in non-inter
 
 If the path to another model is not specified, the game runs in interactive mode. Map size can be defined (float scalar, with 1.0 being default) as well as length of a single game (time in seconds, with 20 being default).
 
+Use arrow keys to move and spacebar to kick.
+
 ## Ranking module
 
 ``` python generate_ranking.py [-p path_to_match_history]```
